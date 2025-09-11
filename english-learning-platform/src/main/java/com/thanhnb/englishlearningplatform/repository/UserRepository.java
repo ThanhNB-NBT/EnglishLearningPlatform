@@ -2,17 +2,34 @@ package com.thanhnb.englishlearningplatform.repository;
 
 import com.thanhnb.englishlearningplatform.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
-
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     
+    // Basic queries
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
-    Boolean existsByUsername(String username);
-    Boolean existsByEmail(String email);
     
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    
+    List<User> findByIsActiveTrue();
+    List<User> findByRole(User.Role role);
+    
+    // Custom queries
+    @Query("SELECT u FROM User u WHERE u.isActive = true AND u.createdAt >= :fromDate")
+    List<User> findActiveUsersFromDate(@Param("fromDate") LocalDateTime fromDate);
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
+    Long countActiveUsers();
+    
+    @Query("SELECT u FROM User u WHERE u.fullName LIKE %:name% OR u.username LIKE %:name%")
+    List<User> searchByNameOrUsername(@Param("name") String name);
 }
